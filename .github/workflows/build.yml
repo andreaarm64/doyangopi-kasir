@@ -23,9 +23,23 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '8.2'
+          cache-disabled: true
 
       - name: Extract project ZIP
         run: unzip doyangopi_kasir.zip
+
+      - name: Accept Android SDK licenses
+        run: |
+          yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+      - name: Install Android SDK components
+        run: |
+          ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager \
+            "platforms;android-34" \
+            "build-tools;34.0.0"
+
+      - name: Create local.properties
+        run: echo "sdk.dir=${ANDROID_HOME}" > doyangopi/local.properties
 
       - name: Generate Gradle Wrapper
         working-directory: doyangopi
@@ -35,8 +49,6 @@ jobs:
 
       - name: Build Debug APK
         working-directory: doyangopi
-        env:
-          ANDROID_HOME: /usr/local/lib/android/sdk
         run: ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
